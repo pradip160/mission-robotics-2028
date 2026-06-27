@@ -47,3 +47,7 @@ Important lession:
 For score calculation,I used separate if statements because multiple risks can happen at the same time.
 
 For final mission status, I used if/elif/else because only one final status should be printed
+
+## Day 4 vedio Evidence 
+I recorded a vedio showing my Day 4 Python robotics practice. 
+vedio: [https://youtu.be/QKNKx6jcBhE]
