@@ -1,0 +1,3 @@
+Robot settings store important configuration such as speed, sensor, range and saftey limits.
+
+

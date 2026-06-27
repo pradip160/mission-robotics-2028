@@ -1,0 +1,2 @@
+Motor control sends movement commands to the robot wheels.
+

@@ -1,0 +1,2 @@
+Camera sensors help the robot see people, tables, and obstacles.
+

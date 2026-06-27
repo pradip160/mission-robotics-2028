@@ -1,0 +1,1 @@
+Day 3 log: Practiced linux folders, files, paths, cat, nano, mv, and tree inside a robotics project.

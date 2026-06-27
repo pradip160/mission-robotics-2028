@@ -1,0 +1,2 @@
+Lidar sensors helps the robot measure distance from objects.
+
