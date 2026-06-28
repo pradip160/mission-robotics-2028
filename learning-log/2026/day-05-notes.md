@@ -1,4 +1,7 @@
 # Day 5: Robot Monitoring loop
+# Learning vedio
+[Watch Day 5 Learning Vedio]
+[https://youtu.be/UipmwwyBbjs]
 ## Mission Korea Robotics Journey 
 
 Today I learned how to use Python while loops to simulate a restaurant delivery robot saftey and mission status during a delivery task.
