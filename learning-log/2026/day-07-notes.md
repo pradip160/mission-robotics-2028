@@ -1,7 +1,7 @@
 # Dat 7 : Robot Input Validaction 
 
 ## Learning Evdience
-- YouTube video:[]
+- YouTube video:[https://youtu.be/x2TU5zsWDTc]
 - Inside the vedio i explain what i learn and achive today. 
 - Code file: project/ros2-restaurant-delivery-robot/control/Day06_robot_functions.py
 - Topic: Input validation, reusable functions, try/except
