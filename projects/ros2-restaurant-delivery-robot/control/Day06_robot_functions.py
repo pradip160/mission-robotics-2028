@@ -11,9 +11,9 @@ def start_robot():
 # check emerygency stop 
 
 def check_emergency_stop():
-    emergency_stop = input("emergency stop  pressed yes/no: ").strip().lower()
+    emergency_stop = get_yes_no("emergency stop  pressed yes/no: ")
  
-    if emergency_stop == "yes":
+    if emergency_stop == True:
        print("emergency stop warning")
        return True 
      
@@ -24,28 +24,43 @@ def check_emergency_stop():
 
 # check battery function
 def check_battery():
-    battery = int(input("Enter the battery percentage: "))
+  while True:
+    battery_status = input("Enter the battery percentage: ").strip()
+
+    if not battery_status.isdigit():
+       print("Invalid battery reading")
+       continue
     
+    battery = int(battery_status)
+    if battery > 100: 
+       print("Invalid battery  range, please try again")
+       continue 
+
+
     if battery < 20:
-       print("battery low, returning to base")
-       return False 
+       print("Battery unsafe, returning to the base")
+       return False
+
     
     else:
        print("battery safe, continue the mission")
        return True 
 
+
+    
+
 # handle obstacle 
 def handle_obstacle():
-    obstacle = input("Obstacle detected yes/no: ").strip().lower()
+    obstacle = get_yes_no("Obstacle detected yes/no: ")
 
-    if obstacle == "yes":
+    if obstacle == True:
        print("Wait and scan again")
        time.sleep(2)
     
        
 
-       path_clear = input("Path become clear yes/no: ").strip().lower()
-       if path_clear == "yes":
+       path_clear = get_yes_no("Path become clear yes/no: ")
+       if path_clear == True:
           print("Continue mission")
           return True
        
@@ -54,14 +69,14 @@ def handle_obstacle():
           time.sleep(2)
        
 
-          alternative_route = input("alternative route available: ").strip().lower()
-          if alternative_route == "yes":
+          alternative_route = get_yes_no("alternative route available yes/no: ")
+          if alternative_route == True:
              print("check the alternative route safe or not")
              time.sleep(2)
                 
    
-             alta_route_safe = input("Is alternative route safe yes/no : ").strip().lower()
-             if alta_route_safe == "yes":
+             alta_route_safe = get_yes_no("Is alternative route safe yes/no : ")
+             if alta_route_safe == True:
                 print("Following to the alternative route")
                 return True 
          
@@ -79,23 +94,67 @@ def handle_obstacle():
 
 # distane left
 def move_robot():
-    distance = 0
-    distance_left = float(input("Enter distance to destination: "))
+  while True:
+    distance = input("Enter the distance to destination: ").strip().lower()
+    distance_left = float(distance)
+    
+
+
+
+    if distance_left < 0:
+       print("Invalid distance rage")
+       continue 
+
     if distance_left == 0:
-       print("delivery complete")
        return True
 
+    if distance_left > 0:
+       print("robot still moving toward destination")
+       continue
 
-    else:
-       print("still on the way")
-       return False
 
+
+
+# lets define yes_no
+def get_yes_no(question):
+    while True: 
+       
+      answer = input(question).strip().lower()
+      
+      if answer == "yes" or answer == "y":
+         print("Answer type is valid")
+         return True
+
+      elif answer == "no" or answer == "n":
+         print("Answer type is valid")
+         return False
+
+     
+      else:
+         print("Answer is invalid and ask again")
+         continue
+
+# lets creat reusable helper for float numbers.
+
+
+def get_float(question):
+   while True: 
+     
+       number = input(question).strip()
+      
+       try:
+          float_number = float(number)
+          return float_number 
+   
+       except:
+          print("Invalid number reading")
+          continue
+      
 
 
 # Main robot control flow starts here 
 def run_mission():
     start_robot()
-
     emergency_status = check_emergency_stop()
 
     if emergency_status == True:
