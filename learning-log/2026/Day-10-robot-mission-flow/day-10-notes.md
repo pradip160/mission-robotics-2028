@@ -1,7 +1,7 @@
 # Day 10: Robot Mission Flow / State Machine
 
 ## Learning Evdience 
-- YouTube video: []
+- YouTube video: [https://youtu.be/s6hODTicWQw]
 - Code file: projrct/ros2-restaurant-delivery-robot/control/Day10_robot_mission_flow.py
 - Topic: Robot mission flow, state machine, mission report, and saftey logic 
 
