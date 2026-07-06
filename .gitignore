@@ -1,5 +1,14 @@
+
 __pycache__/
 *.pyc
 *.swp
 *.swo
 *.mp4
+# ROS2 generated build folders
+projects/ros2-restaurant-delivery-robot/ros2_ws/build/
+projects/ros2-restaurant-delivery-robot/ros2_ws/install/
+projects/ros2-restaurant-delivery-robot/ros2_ws/log/
+
+# Python cache files
+__pycache__/
+*.pyc
