@@ -23,7 +23,9 @@ setup(
         ],
     },
     entry_points={
-        'console_scripts': [  'robot_status_publisher = restaurant_robot_status.robot_status_publisher:main',  
-      ],
+        'console_scripts': [
+            'robot_status_publisher = restaurant_robot_status.robot_status_publisher:main',
+            'robot_status_subscriber = restaurant_robot_status.robot_status_subscriber:main',
+        ],
     },
-)
+ )
