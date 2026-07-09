@@ -1,6 +1,6 @@
 ## Learning Evdience 
 
-- YouTube video: []
+- YouTube video: [https://youtu.be/qZuO6ZWNriA]
 - Publisher node: `camera_obstacle_publisher`
 - Subscriber node: `navigation_obstacle_subscriber`
 - Topic: `/obstacle_status`
