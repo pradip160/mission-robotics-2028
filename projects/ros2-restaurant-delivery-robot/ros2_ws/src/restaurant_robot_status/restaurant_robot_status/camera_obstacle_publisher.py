@@ -12,7 +12,7 @@ class CameraObstaclePublisher(Node):
              'obstacle_status',
              10
          )
-          
+         self.obstacle_present = True 
          self.timer = self.create_timer(
             1.0,
             self.publish_obstacle
@@ -20,8 +20,12 @@ class CameraObstaclePublisher(Node):
 
      def publish_obstacle(self):
          message = String()
-         message.data = 'OBSTACLE_DETECTED'
+         if self.obstacle_present:
+             message.data = 'OBSTACLE_DETECTED'
+         else:
+             message.data = 'PATH_CLEAR'
          self.publisher.publish(message)
+         self.obstacle_present = not self.obstacle_present
          self.get_logger().info(
              f'Camera detected: {message.data}'
          )

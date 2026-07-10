@@ -17,9 +17,19 @@ class NavigationObstacleSubscriber(Node):
     def receive_obstacle(self, message):
         obstacle_status = message.data
         if obstacle_status == 'OBSTACLE_DETECTED':
-            self.get_logger().info('Obstacle detected — changing direction')
+            self.get_logger().info('Obstacle detected — stopping and changing direction')
+        elif obstacle_status == 'PATH_CLEAR':
+            self.get_logger().info('Path clear — continuing navigation')
 
+        elif obstacle_status == 'PERSON_DETECTED':
+            self.get_logger().info('Person detected - stopping and waiting')
 
+        else:
+            self.get_logger().warning(
+                'Unknown obstacle status - stopping for safety'
+
+            )
+ 
 
 def main(args=None):
     rclpy.init(args=args)
@@ -36,3 +46,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
