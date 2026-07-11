@@ -28,6 +28,7 @@ setup(
             'robot_status_subscriber = restaurant_robot_status.robot_status_subscriber:main',
             'camera_obstacle_publisher = restaurant_robot_status.camera_obstacle_publisher:main',
             'navigation_obstacle_subscriber = restaurant_robot_status.navigation_obstacle_subscriber:main',
-        ],
+            'motor_control_subscriber = restaurant_robot_status.motor_control_subscriber:main',
+        ]
     },
 )
