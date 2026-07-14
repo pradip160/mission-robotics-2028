@@ -37,7 +37,7 @@ class NavigationObstacleSubscriber(Node):
         )
   
 
-        self.saftey_timer = self.create_timer(
+        self.safety_timer = self.create_timer(
             1.0,
             self.check_sensor_freshness
         )    
@@ -59,7 +59,7 @@ class NavigationObstacleSubscriber(Node):
         if not self.camera_fresh or not self.lidar_fresh:
              motor_command.data = 'STOP'
 
-        if self.camera_state == 'UNKNOWN' or self.lidar_state == 'UNKNOWN':
+        elif self.camera_state == 'UNKNOWN' or self.lidar_state == 'UNKNOWN':
              motor_command.data = 'STOP'
 
         elif self.camera_state == 'OBSTACLE_DETECTED' or self.lidar_state == 'OBSTACLE_DETECTED':
