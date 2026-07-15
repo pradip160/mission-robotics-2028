@@ -100,6 +100,10 @@ class NavigationObstacleSubscriber(Node):
         elif self.front_state == 'OBSTACLE_DETECTED':
              if self.left_fresh and self.left_state == 'PATH_CLEAR':
                   motor_command.data = 'TURN_LEFT'
+
+             elif self.right_fresh and self.right_state == 'PATH_CLEAR':
+                  motor_command.data = 'TURN_RIGHT'
+
              else:
                   motor_command.data = 'STOP' 
 
@@ -111,7 +115,7 @@ class NavigationObstacleSubscriber(Node):
         
         self.motor_command_publisher.publish(motor_command)
         self.get_logger().info(
-             f'Camera: {self.camera_state}, LiDAR: {self.lidar_state}, Front: {self.front_state}, Command: {motor_command.data}'
+             f'Camera: {self.camera_state}, LiDAR: {self.lidar_state}, Front: {self.front_state}, Left: {self.left_state},  Left fresh: {self.left_fresh}, Right: {self.right_state}, Right fresh: {self.right_fresh}, Command: {motor_command.data}'
         )
 
     def check_sensor_freshness(self):

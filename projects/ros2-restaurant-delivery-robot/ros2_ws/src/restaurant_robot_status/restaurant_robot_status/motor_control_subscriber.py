@@ -23,6 +23,10 @@ class MotorControlSubscriber(Node):
             self.get_logger().info(
                 'Left wheel slowing down and right wheel moving faster'
             )
+        elif motor_command == 'TURN_RIGHT':
+            self.get_logger().info(
+                'Right wheel slowing down and left wheel moving faster'
+            )
         elif motor_command == 'STOP_AND_WAIT':
             self.get_logger().info(
                 'Both wheels stop and wait'
