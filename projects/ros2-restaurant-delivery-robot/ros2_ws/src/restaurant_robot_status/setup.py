@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+from glob import glob
 
 package_name = 'restaurant_robot_status'
 
@@ -10,6 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -30,6 +32,8 @@ setup(
             'navigation_obstacle_subscriber = restaurant_robot_status.navigation_obstacle_subscriber:main',
             'motor_control_subscriber = restaurant_robot_status.motor_control_subscriber:main',
             'lidar_obstacle_publisher = restaurant_robot_status.lidar_obstacle_publisher:main',
+            'left_obstacle_publisher = restaurant_robot_status.left_obstacle_publisher:main',
+            'right_obstacle_publisher = restaurant_robot_status.right_obstacle_publisher:main',
  
        ]
     },	
