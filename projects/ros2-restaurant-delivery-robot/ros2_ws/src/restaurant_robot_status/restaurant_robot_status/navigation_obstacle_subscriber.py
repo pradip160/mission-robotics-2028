@@ -1,30 +1,36 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-
+from rcl_interfaces.msg import SetParametersResult
 
 class NavigationObstacleSubscriber(Node):
 
     def __init__(self):
         super().__init__('navigation_obstacle_subscriber')
-        self.sensor_timeout = 3.0
+        self.declare_parameter('sensor_timeout', 3.0)
+        self.sensor_timeout = self.get_parameter('sensor_timeout').value
+        self.add_on_set_parameters_callback(self.parameter_callback)
         self.front_state = 'UNKNOWN'
 
         self.left_state = 'UNKNOWN'
         self.last_left_message_time = None
         self.left_fresh = False 
+        self.previous_left_fresh = None
  
         self.right_state = 'UNKNOWN'
         self.last_right_message_time = None 
         self.right_fresh = False
+        self.previous_right_fresh = None
 
         self.camera_state = 'UNKNOWN'
         self.last_camera_message_time = None
         self.camera_fresh = False
+        self.previous_camera_fresh = None        
 
         self.lidar_state = 'UNKNOWN'
         self.last_lidar_message_time = None 
         self.lidar_fresh = False
+        self.previous_lidar_fresh = None
 
         self.subscription = self.create_subscription(
             String,
@@ -64,6 +70,23 @@ class NavigationObstacleSubscriber(Node):
             self.check_sensor_freshness
         )    
 
+
+    def parameter_callback(self, parameters):
+        for parameter in parameters:
+            if parameter.name == 'sensor_timeout':
+                if parameter.value <= 0.0:
+                    return SetParametersResult(
+                        successful=False,
+                        reason='sensor_timeout must be greater than 0.0'
+                    )
+
+                self.sensor_timeout = parameter.value
+                self.get_logger().info(
+                    f'Sensor timeout updated to: {self.sensor_timeout} seconds'
+                    )
+
+ 
+        return SetParametersResult(successful=True)
 
     def receive_obstacle(self, message):
         self.camera_state = message.data
@@ -150,6 +173,36 @@ class NavigationObstacleSubscriber(Node):
 
         self.camera_fresh = camera_age_seconds <= self.sensor_timeout
         self.lidar_fresh = lidar_age_seconds <= self.sensor_timeout
+
+        if self.previous_camera_fresh is True and self.camera_fresh is False:
+            self.get_logger().warning(
+                f'Camera became stale - age: {camera_age_seconds:.2f}s,'
+                f'timeout: {self.sensor_timeout:.2f}s'
+            )
+        self.previous_camera_fresh = self.camera_fresh
+
+
+        if self.previous_lidar_fresh is True and self.lidar_fresh is False:
+            self.get_logger().warning(
+                f'lidar became stale - age: {lidar_age_seconds:.2f}s,'
+                f'timeout: {self.sensor_timeout:.2f}s'
+            )
+        self.previous_lidar_fresh = self.lidar_fresh
+
+        if self.previous_left_fresh is True and self.left_fresh is False: 
+            self.get_logger().warning(
+                f'Left became stale - age: {left_age_seconds:.2f}s,'
+                f'timeout: {self.sensor_timeout:.2f}s'
+            )
+        self.previous_left_fresh = self.left_fresh
+
+        if self.previous_right_fresh is True and self.right_fresh is False: 
+            self.get_logger().warning(
+                f'Right became stale - age: {right_age_seconds:.2f}s,'
+                f'timeout: {self.sensor_timeout:.2f}s'
+            )
+        self.previous_right_fresh = self.right_fresh
+
 
         self.decide_navigation()
 

@@ -14,7 +14,7 @@ class LidarObstaclePublisher(Node):
         self.obstacle_present = False
 
         self.timer = self.create_timer(
-            2.0,
+            1.0,
             self.publish_lidar_status
         )
 
