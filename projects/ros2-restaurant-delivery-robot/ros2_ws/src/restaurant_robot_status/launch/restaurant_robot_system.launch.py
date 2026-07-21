@@ -1,7 +1,14 @@
+import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
+    config_file = os.path.join(
+        get_package_share_directory('restaurant_robot_status'),
+        'config',
+        'navigation_params.yaml'
+    )
     return LaunchDescription([
         Node(
             package='restaurant_robot_status',
@@ -26,6 +33,7 @@ def generate_launch_description():
         Node(
             package='restaurant_robot_status',
             executable='navigation_obstacle_subscriber',
+            parameters=[config_file],
             output='screen'
         ),
         Node(
