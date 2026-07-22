@@ -1,6 +1,9 @@
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
@@ -9,7 +12,21 @@ def generate_launch_description():
         'config',
         'navigation_params.yaml'
     )
+    sensor_timeout = LaunchConfiguration('sensor_timeout')
+
+    sensor_timeout_value = ParameterValue(
+        sensor_timeout,
+        value_type=float
+    )
+
     return LaunchDescription([
+
+    DeclareLaunchArgument(
+        'sensor_timeout',
+        default_value='4.0',
+        description='Maximum sensor message age before it becomes stale'
+    ),
+
         Node(
             package='restaurant_robot_status',
             executable='camera_obstacle_publisher',
@@ -33,7 +50,10 @@ def generate_launch_description():
         Node(
             package='restaurant_robot_status',
             executable='navigation_obstacle_subscriber',
-            parameters=[config_file],
+            parameters=[
+                config_file,
+                {'sensor_timeout': sensor_timeout_value}
+            ],
             output='screen'
         ),
         Node(
