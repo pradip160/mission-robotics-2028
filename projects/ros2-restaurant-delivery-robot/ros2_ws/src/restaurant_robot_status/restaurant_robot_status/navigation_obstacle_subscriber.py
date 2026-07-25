@@ -14,21 +14,21 @@ class NavigationObstacleSubscriber(Node):
 
         self.left_state = 'UNKNOWN'
         self.last_left_message_time = None
-        self.left_fresh = False 
+        self.left_fresh = False
         self.previous_left_fresh = None
- 
+
         self.right_state = 'UNKNOWN'
-        self.last_right_message_time = None 
+        self.last_right_message_time = None
         self.right_fresh = False
         self.previous_right_fresh = None
 
         self.camera_state = 'UNKNOWN'
         self.last_camera_message_time = None
         self.camera_fresh = False
-        self.previous_camera_fresh = None        
+        self.previous_camera_fresh = None
 
         self.lidar_state = 'UNKNOWN'
-        self.last_lidar_message_time = None 
+        self.last_lidar_message_time = None
         self.lidar_fresh = False
         self.previous_lidar_fresh = None
 
@@ -38,7 +38,7 @@ class NavigationObstacleSubscriber(Node):
             self.receive_obstacle,
             10
         )
- 
+
         self.motor_command_publisher = self.create_publisher(
             String,
             'motor_command',
@@ -46,7 +46,7 @@ class NavigationObstacleSubscriber(Node):
         )
 
         self.lidar_subscription = self.create_subscription(
-            String,  
+            String,
             'lidar_status',
             self.receive_lidar,
             10
@@ -63,12 +63,12 @@ class NavigationObstacleSubscriber(Node):
             self.receive_right,
             10
         )
-  
+
 
         self.safety_timer = self.create_timer(
             1.0,
             self.check_sensor_freshness
-        )    
+        )
 
 
     def parameter_callback(self, parameters):
@@ -85,7 +85,7 @@ class NavigationObstacleSubscriber(Node):
                     f'Sensor timeout updated to: {self.sensor_timeout} seconds'
                     )
 
- 
+
         return SetParametersResult(successful=True)
 
     def receive_obstacle(self, message):
@@ -96,12 +96,12 @@ class NavigationObstacleSubscriber(Node):
 
 
     def receive_lidar(self, message):
-        self.lidar_state = message.data 
+        self.lidar_state = message.data
         self.last_lidar_message_time = self.get_clock().now()
         self.decide_navigation()
 
     def receive_left(self, message):
-        self.left_state = message.data 
+        self.left_state = message.data
         self.last_left_message_time = self.get_clock().now()
         self.decide_navigation()
 
@@ -114,10 +114,10 @@ class NavigationObstacleSubscriber(Node):
         self.update_front_state()
         motor_command = String()
 
-        if not self.camera_fresh or not self.lidar_fresh:
+        if not self.camera_fresh or not self.lidar_fresh or not self.left_fresh or not self.right_fresh:
              motor_command.data = 'STOP'
 
-        elif self.front_state == 'UNKNOWN':
+        elif self.front_state == 'UNKNOWN' or self.left_state == "UNKNOWN" or self.right_state == "UNKNOWN":
              motor_command.data = 'STOP'
 
         elif self.front_state == 'OBSTACLE_DETECTED':
@@ -128,14 +128,14 @@ class NavigationObstacleSubscriber(Node):
                   motor_command.data = 'TURN_RIGHT'
 
              else:
-                  motor_command.data = 'STOP' 
+                  motor_command.data = 'STOP'
 
-      
+
         elif self.front_state == 'PATH_CLEAR':
-             motor_command.data = 'MOVE_FORWARD'        
-        else: 
+             motor_command.data = 'MOVE_FORWARD'
+        else:
              motor_command.data = 'STOP'
-        
+
         self.motor_command_publisher.publish(motor_command)
         self.get_logger().info(
              f'Camera: {self.camera_state}, LiDAR: {self.lidar_state}, Front: {self.front_state}, Left: {self.left_state},  Left fresh: {self.left_fresh}, Right: {self.right_state}, Right fresh: {self.right_fresh}, Command: {motor_command.data}'
@@ -144,19 +144,30 @@ class NavigationObstacleSubscriber(Node):
     def check_sensor_freshness(self):
         current_time = self.get_clock().now()
 
-        if self.last_camera_message_time is None or self.last_lidar_message_time is None:
+        if self.last_camera_message_time is None:
             self.camera_fresh = False
+
+        else:
+            camera_age = current_time - self.last_camera_message_time
+            camera_age_seconds = camera_age.nanoseconds / 1_000_000_000
+            self.camera_fresh = camera_age_seconds <= self.sensor_timeout
+
+        if self.last_lidar_message_time is None:
             self.lidar_fresh = False
-            self.decide_navigation()
-            return
+
+        else:
+            lidar_age = current_time - self.last_lidar_message_time
+            lidar_age_seconds = lidar_age.nanoseconds /1_000_000_000
+            self.lidar_fresh = lidar_age_seconds <= self.sensor_timeout
+
 
         if self.last_left_message_time is None:
-            self.left_fresh = False 
+            self.left_fresh = False
         else:
             left_age = current_time - self.last_left_message_time
             left_age_seconds = left_age.nanoseconds / 1_000_000_000
             self.left_fresh = left_age_seconds <= self.sensor_timeout
- 
+
         if self.last_right_message_time is None:
             self.right_fresh = False
         else:
@@ -165,14 +176,6 @@ class NavigationObstacleSubscriber(Node):
             self.right_fresh = right_age_seconds <= self.sensor_timeout
 
 
-        camera_age = current_time - self.last_camera_message_time
-        lidar_age = current_time - self.last_lidar_message_time
-
-        camera_age_seconds = camera_age.nanoseconds / 1_000_000_000
-        lidar_age_seconds = lidar_age.nanoseconds / 1_000_000_000
-
-        self.camera_fresh = camera_age_seconds <= self.sensor_timeout
-        self.lidar_fresh = lidar_age_seconds <= self.sensor_timeout
 
         if self.previous_camera_fresh is True and self.camera_fresh is False:
             self.get_logger().warning(
@@ -189,14 +192,14 @@ class NavigationObstacleSubscriber(Node):
             )
         self.previous_lidar_fresh = self.lidar_fresh
 
-        if self.previous_left_fresh is True and self.left_fresh is False: 
+        if self.previous_left_fresh is True and self.left_fresh is False:
             self.get_logger().warning(
                 f'Left became stale - age: {left_age_seconds:.2f}s,'
                 f'timeout: {self.sensor_timeout:.2f}s'
             )
         self.previous_left_fresh = self.left_fresh
 
-        if self.previous_right_fresh is True and self.right_fresh is False: 
+        if self.previous_right_fresh is True and self.right_fresh is False:
             self.get_logger().warning(
                 f'Right became stale - age: {right_age_seconds:.2f}s,'
                 f'timeout: {self.sensor_timeout:.2f}s'
@@ -211,10 +214,10 @@ class NavigationObstacleSubscriber(Node):
         if self.camera_state == 'OBSTACLE_DETECTED' or self.lidar_state == 'OBSTACLE_DETECTED':
             self.front_state = 'OBSTACLE_DETECTED'
 
-        elif self.camera_state == 'PATH_CLEAR' and self.lidar_state == 'PATH_CLEAR': 
+        elif self.camera_state == 'PATH_CLEAR' and self.lidar_state == 'PATH_CLEAR':
             self.front_state = 'PATH_CLEAR'
 
-        else: 
+        else:
             self.front_state = 'UNKNOWN'
 
 def main(args=None):
