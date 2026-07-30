@@ -1,6 +1,7 @@
+import math
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from rcl_interfaces.msg import SetParametersResult
 
 class NavigationObstacleSubscriber(Node):
@@ -11,6 +12,8 @@ class NavigationObstacleSubscriber(Node):
         self.sensor_timeout = self.get_parameter('sensor_timeout').value
         self.add_on_set_parameters_callback(self.parameter_callback)
         self.front_state = 'UNKNOWN'
+        self.recovery_state = 'NORMAL'
+        self.recovery_clear_distance = 1.5
 
         self.left_state = 'UNKNOWN'
         self.last_left_message_time = None
@@ -32,6 +35,19 @@ class NavigationObstacleSubscriber(Node):
         self.lidar_fresh = False
         self.previous_lidar_fresh = None
 
+        self.lidar_distance = 0.0
+        self.last_lidar_distance_message_time = None
+        self.lidar_distance_fresh = False
+
+        self.rear_state = 'UNKNOWN'
+        self.last_rear_message_time = None
+        self.rear_fresh = False
+        self.previous_rear_fresh = None
+
+        self.rear_distance = 0.0
+        self.last_rear_distance_message_time = None
+        self.rear_distance_fresh = False
+
         self.subscription = self.create_subscription(
             String,
             'obstacle_status',
@@ -49,6 +65,24 @@ class NavigationObstacleSubscriber(Node):
             String,
             'lidar_status',
             self.receive_lidar,
+            10
+        )
+        self.lidar_distance_subscription = self.create_subscription(
+            Float32,
+            'lidar_distance',
+            self.receive_lidar_distance,
+            10
+        )
+        self.rear_subscription = self.create_subscription(
+            String,
+            'rear_status',
+            self.receive_rear,
+            10
+        )
+        self.rear_distance_subscription = self.create_subscription(
+            Float32,
+            'rear_distance',
+            self.receive_rear_distance,
             10
         )
         self.left_subscription = self.create_subscription(
@@ -100,6 +134,21 @@ class NavigationObstacleSubscriber(Node):
         self.last_lidar_message_time = self.get_clock().now()
         self.decide_navigation()
 
+    def receive_lidar_distance(self, message):
+        self.lidar_distance = message.data
+        self.last_lidar_distance_message_time = self.get_clock().now()
+        self.decide_navigation()
+
+    def receive_rear(self, message):
+        self.rear_state = message.data
+        self.last_rear_message_time = self.get_clock().now()
+        self.decide_navigation()
+
+    def receive_rear_distance(self, message):
+        self.rear_distance = message.data
+        self.last_rear_distance_message_time = self.get_clock().now()
+        self.decide_navigation()
+
     def receive_left(self, message):
         self.left_state = message.data
         self.last_left_message_time = self.get_clock().now()
@@ -114,11 +163,57 @@ class NavigationObstacleSubscriber(Node):
         self.update_front_state()
         motor_command = String()
 
-        if not self.camera_fresh or not self.lidar_fresh or not self.left_fresh or not self.right_fresh:
-             motor_command.data = 'STOP'
+        if (
+            not self.camera_fresh
+            or not self.lidar_fresh
+            or not self.lidar_distance_fresh
+            or not self.rear_fresh
+            or not self.rear_distance_fresh
+            or not self.left_fresh
+            or not self.right_fresh
+        ):
+            motor_command.data = 'STOP'
+        elif (
+            not math.isfinite(self.lidar_distance)
+            or self.lidar_distance <= 0.0
+            or not math.isfinite(self.rear_distance)
+            or self.rear_distance <= 0.0
+        ):
+            motor_command.data = 'STOP'
+        elif (
+            self.front_state == 'UNKNOWN'
+            or self.left_state == "UNKNOWN"
+            or self.right_state == "UNKNOWN"
+            or self.rear_state == 'UNKNOWN'
+        ):
+            motor_command.data = 'STOP'
 
-        elif self.front_state == 'UNKNOWN' or self.left_state == "UNKNOWN" or self.right_state == "UNKNOWN":
-             motor_command.data = 'STOP'
+        elif self.recovery_state == 'REVERSING':
+            if (
+                self.rear_state != 'PATH_CLEAR'
+                or self.rear_distance <= 1.0
+            ):
+                motor_command.data = 'STOP'
+
+
+            elif self.lidar_distance >= self.recovery_clear_distance:
+                self.recovery_state = 'NORMAL'
+                motor_command.data = 'STOP'
+
+            else:
+                motor_command.data = 'MOVE_BACKWARD'
+
+
+        elif self.lidar_distance <= 1.0:
+            if (
+                self.rear_state == 'PATH_CLEAR'
+                and self.rear_distance > 1.0
+            ):
+                self.recovery_state = 'REVERSING'
+                motor_command.data = 'MOVE_BACKWARD'
+
+            else:
+                motor_command.data  = 'STOP'
 
         elif self.front_state == 'OBSTACLE_DETECTED':
              if self.left_fresh and self.left_state == 'PATH_CLEAR':
@@ -132,7 +227,8 @@ class NavigationObstacleSubscriber(Node):
 
 
         elif self.front_state == 'PATH_CLEAR':
-             motor_command.data = 'MOVE_FORWARD'
+            motor_command.data = 'MOVE_FORWARD'
+
         else:
              motor_command.data = 'STOP'
 
@@ -157,8 +253,18 @@ class NavigationObstacleSubscriber(Node):
 
         else:
             lidar_age = current_time - self.last_lidar_message_time
-            lidar_age_seconds = lidar_age.nanoseconds /1_000_000_000
+            lidar_age_seconds = lidar_age.nanoseconds / 1_000_000_000
             self.lidar_fresh = lidar_age_seconds <= self.sensor_timeout
+
+
+        if self.last_lidar_distance_message_time is None:
+            self.lidar_distance_fresh = False
+
+        else:
+            lidar_distance_age = current_time - self.last_lidar_distance_message_time
+            lidar_distance_age_seconds = lidar_distance_age.nanoseconds / 1_000_000_000
+            self.lidar_distance_fresh = lidar_distance_age_seconds <= self.sensor_timeout
+
 
 
         if self.last_left_message_time is None:
@@ -175,7 +281,19 @@ class NavigationObstacleSubscriber(Node):
             right_age_seconds = right_age.nanoseconds / 1_000_000_000
             self.right_fresh = right_age_seconds <= self.sensor_timeout
 
+        if self.last_rear_message_time is None:
+            self.rear_fresh = False
+        else:
+            rear_age = current_time - self.last_rear_message_time
+            rear_age_seconds = rear_age.nanoseconds / 1_000_000_000
+            self.rear_fresh = rear_age_seconds <= self.sensor_timeout
 
+        if self.last_rear_distance_message_time is None:
+            self.rear_distance_fresh = False
+        else:
+            rear_distance_age = current_time - self.last_rear_distance_message_time
+            rear_distance_age_seconds  = rear_distance_age.nanoseconds / 1_000_000_000
+            self.rear_distance_fresh = rear_distance_age_seconds <= self.sensor_timeout
 
         if self.previous_camera_fresh is True and self.camera_fresh is False:
             self.get_logger().warning(

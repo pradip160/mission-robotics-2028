@@ -2,18 +2,18 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, Float32
 
-class LidarObstaclePublisher(Node):
+class RearObstaclePublisher(Node):
 
     def __init__(self):
-        super().__init__('lidar_obstacle_publisher')
+        super().__init__('rear_obstacle_publisher')
         self.publisher = self.create_publisher(
             String,
-            'lidar_status',
+            'rear_status',
             10
         )
         self.distance_publisher = self.create_publisher(
              Float32,
-            'lidar_distance',
+            'rear_distance',
             10
         )
 
@@ -21,10 +21,10 @@ class LidarObstaclePublisher(Node):
 
         self.timer = self.create_timer(
             1.0,
-            self.publish_lidar_status
+            self.publish_rear_status
         )
 
-    def publish_lidar_status(self):
+    def publish_rear_status(self):
         message = String()
         distance_message = Float32()
         if self.obstacle_present:
@@ -35,17 +35,16 @@ class LidarObstaclePublisher(Node):
             distance_message.data = 3.0
         self.publisher.publish(message)
         self.distance_publisher.publish(distance_message)
-        self.obstacle_present = not self.obstacle_present
         self.get_logger().info(
-            f'Lidar_obstacle: {message.data}'
+            f'Rear_obstacle: {message.data}'
         )
         self.get_logger().info(
-            f'lidar distance: {distance_message.data}'
+            f'Rear distance: {distance_message.data}'
         )
 
 def main(args=None):
     rclpy.init(args=args)
-    node = LidarObstaclePublisher()
+    node = RearObstaclePublisher()
 
     try:
         rclpy.spin(node)
@@ -60,3 +59,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+

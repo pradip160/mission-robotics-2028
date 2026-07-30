@@ -1,5 +1,5 @@
 import rclpy
-from rclpy.node import Node 
+from rclpy.node import Node
 from std_msgs.msg import String
 
 
@@ -27,6 +27,10 @@ class MotorControlSubscriber(Node):
             self.get_logger().info(
                 'Right wheel slowing down and left wheel moving faster'
             )
+        elif motor_command == 'MOVE_BACKWARD':
+            self.get_logger().info(
+                'Both wheels move backward'
+            )
         elif motor_command == 'STOP_AND_WAIT':
             self.get_logger().info(
                 'Both wheels stop and wait'
@@ -39,7 +43,7 @@ class MotorControlSubscriber(Node):
             self.get_logger().warning(
                 'Unknown motor command - stopping safely'
             )
-   
+
 def main(args=None):
     rclpy.init(args=args)
     node = MotorControlSubscriber()
