@@ -5,7 +5,6 @@ from std_msgs.msg import String, Float32
 from rcl_interfaces.msg import SetParametersResult
 
 class NavigationObstacleSubscriber(Node):
-
     def __init__(self):
         super().__init__('navigation_obstacle_subscriber')
         self.declare_parameter('sensor_timeout', 3.0)
@@ -14,6 +13,11 @@ class NavigationObstacleSubscriber(Node):
         self.front_state = 'UNKNOWN'
         self.recovery_state = 'NORMAL'
         self.recovery_clear_distance = 1.5
+        self.recovery_start_time = None
+        self.maximum_recovery_duration = 5.0
+
+        self.recovery_start_time = 'REVERSING' 
+        
 
         self.left_state = 'UNKNOWN'
         self.last_left_message_time = None
@@ -187,9 +191,22 @@ class NavigationObstacleSubscriber(Node):
             or self.rear_state == 'UNKNOWN'
         ):
             motor_command.data = 'STOP'
+      
+
+        elif self.recovery_state == 'RECOVERY_FAILED':
+            motor_command.data = 'STOP_AND_WAIT'
+
 
         elif self.recovery_state == 'REVERSING':
-            if (
+            current_time = self.get_clock().now()
+            recovery_elapsed = current_time - self.recovery_start_time
+            recovery_elapsed_seconds = recovery_elapsed.nanoseconds / 1_000_000_000
+
+            if recovery_elapsed_seconds >= self.maximum_recovery_duration:
+                self.recovery_state = 'RECOVERY_FAILED'
+                motor_command.data = 'STOP_AND_WAIT'
+
+            elif (
                 self.rear_state != 'PATH_CLEAR'
                 or self.rear_distance <= 1.0
             ):
@@ -198,6 +215,7 @@ class NavigationObstacleSubscriber(Node):
 
             elif self.lidar_distance >= self.recovery_clear_distance:
                 self.recovery_state = 'NORMAL'
+                self.recovery_start_time = None
                 motor_command.data = 'STOP'
 
             else:
@@ -209,8 +227,11 @@ class NavigationObstacleSubscriber(Node):
                 self.rear_state == 'PATH_CLEAR'
                 and self.rear_distance > 1.0
             ):
+
                 self.recovery_state = 'REVERSING'
+                self.recovery_start_time = self.get_clock().now()
                 motor_command.data = 'MOVE_BACKWARD'
+
 
             else:
                 motor_command.data  = 'STOP'
