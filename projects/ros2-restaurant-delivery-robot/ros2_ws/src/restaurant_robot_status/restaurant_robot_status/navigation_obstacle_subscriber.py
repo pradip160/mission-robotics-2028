@@ -1,12 +1,24 @@
 import math
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import (
+    QoSProfile,
+    ReliabilityPolicy,
+    HistoryPolicy,
+    DurabilityPolicy
+)
 from std_msgs.msg import String, Float32
 from rcl_interfaces.msg import SetParametersResult
 
 class NavigationObstacleSubscriber(Node):
     def __init__(self):
         super().__init__('navigation_obstacle_subscriber')
+        sensor_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            durability=DurabilityPolicy.VOLATILE
+        )
         self.declare_parameter('sensor_timeout', 3.0)
         self.sensor_timeout = self.get_parameter('sensor_timeout').value
         self.add_on_set_parameters_callback(self.parameter_callback)
@@ -75,7 +87,7 @@ class NavigationObstacleSubscriber(Node):
             Float32,
             'lidar_distance',
             self.receive_lidar_distance,
-            10
+            sensor_qos
         )
         self.rear_subscription = self.create_subscription(
             String,

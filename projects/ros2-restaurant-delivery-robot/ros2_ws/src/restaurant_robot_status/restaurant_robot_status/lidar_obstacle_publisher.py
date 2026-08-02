@@ -1,11 +1,23 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import (
+    QoSProfile,
+    ReliabilityPolicy,
+    HistoryPolicy,
+    DurabilityPolicy
+)
 from std_msgs.msg import String, Float32
 
 class LidarObstaclePublisher(Node):
 
     def __init__(self):
         super().__init__('lidar_obstacle_publisher')
+        sensor_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            durability=DurabilityPolicy.VOLATILE
+        )
         self.publisher = self.create_publisher(
             String,
             'lidar_status',
@@ -14,7 +26,7 @@ class LidarObstaclePublisher(Node):
         self.distance_publisher = self.create_publisher(
              Float32,
             'lidar_distance',
-            10
+            sensor_qos
         )
 
         self.obstacle_present = False
