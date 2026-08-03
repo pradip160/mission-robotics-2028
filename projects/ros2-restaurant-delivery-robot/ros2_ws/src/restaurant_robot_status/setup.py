@@ -36,6 +36,9 @@ setup(
             'rear_obstacle_publisher = restaurant_robot_status.rear_obstacle_publisher:main',
             'left_obstacle_publisher = restaurant_robot_status.left_obstacle_publisher:main',
             'right_obstacle_publisher = restaurant_robot_status.right_obstacle_publisher:main',
+            'qos_depth_test_subscriber = restaurant_robot_status.qos_depth_test_subscriber:main',
+            'qos_depth_test_publisher = restaurant_robot_status.qos_depth_test_publisher:main',
+
 
        ]
     },	
