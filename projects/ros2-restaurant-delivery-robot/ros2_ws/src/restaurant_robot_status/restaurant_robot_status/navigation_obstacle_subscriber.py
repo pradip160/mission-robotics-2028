@@ -9,6 +9,7 @@ from rclpy.qos import (
 )
 from std_msgs.msg import String, Float32
 from rcl_interfaces.msg import SetParametersResult
+from restaurant_robot_interfaces.msg import LidarObservation
 
 class NavigationObstacleSubscriber(Node):
     def __init__(self):
@@ -50,10 +51,8 @@ class NavigationObstacleSubscriber(Node):
         self.last_lidar_message_time = None
         self.lidar_fresh = False
         self.previous_lidar_fresh = None
-
+        self.lidar_valid = False
         self.lidar_distance = 0.0
-        self.last_lidar_distance_message_time = None
-        self.lidar_distance_fresh = False
 
         self.rear_state = 'UNKNOWN'
         self.last_rear_message_time = None
@@ -78,15 +77,9 @@ class NavigationObstacleSubscriber(Node):
         )
 
         self.lidar_subscription = self.create_subscription(
-            String,
-            'lidar_status',
-            self.receive_lidar,
-            10
-        )
-        self.lidar_distance_subscription = self.create_subscription(
-            Float32,
-            'lidar_distance',
-            self.receive_lidar_distance,
+            LidarObservation,
+            'lidar_observation',
+            self.receive_lidar_observation,
             sensor_qos
         )
         self.rear_subscription = self.create_subscription(
@@ -144,15 +137,13 @@ class NavigationObstacleSubscriber(Node):
         self.decide_navigation()
 
 
+    def receive_lidar_observation(self,message):
+        self.lidar_state = message.status
+        self.lidar_distance = message.distance
+        self.lidar_valid = message.valid
 
-    def receive_lidar(self, message):
-        self.lidar_state = message.data
         self.last_lidar_message_time = self.get_clock().now()
-        self.decide_navigation()
 
-    def receive_lidar_distance(self, message):
-        self.lidar_distance = message.data
-        self.last_lidar_distance_message_time = self.get_clock().now()
         self.decide_navigation()
 
     def receive_rear(self, message):
@@ -182,7 +173,7 @@ class NavigationObstacleSubscriber(Node):
         if (
             not self.camera_fresh
             or not self.lidar_fresh
-            or not self.lidar_distance_fresh
+            or not self.lidar_valid
             or not self.rear_fresh
             or not self.rear_distance_fresh
             or not self.left_fresh
@@ -225,25 +216,6 @@ class NavigationObstacleSubscriber(Node):
                 motor_command.data = 'STOP'
 
 
-            elif self.lidar_distance >= self.recovery_clear_distance:
-                self.recovery_state = 'NORMAL'
-                self.recovery_start_time = None
-                motor_command.data = 'STOP'
-
-            else:
-                motor_command.data = 'MOVE_BACKWARD'
-
-
-        elif self.lidar_distance <= 1.0:
-            if (
-                self.rear_state == 'PATH_CLEAR'
-                and self.rear_distance > 1.0
-            ):
-
-                self.recovery_state = 'REVERSING'
-                self.recovery_start_time = self.get_clock().now()
-                motor_command.data = 'MOVE_BACKWARD'
-
 
             else:
                 motor_command.data  = 'STOP'
@@ -280,23 +252,6 @@ class NavigationObstacleSubscriber(Node):
             camera_age = current_time - self.last_camera_message_time
             camera_age_seconds = camera_age.nanoseconds / 1_000_000_000
             self.camera_fresh = camera_age_seconds <= self.sensor_timeout
-
-        if self.last_lidar_message_time is None:
-            self.lidar_fresh = False
-
-        else:
-            lidar_age = current_time - self.last_lidar_message_time
-            lidar_age_seconds = lidar_age.nanoseconds / 1_000_000_000
-            self.lidar_fresh = lidar_age_seconds <= self.sensor_timeout
-
-
-        if self.last_lidar_distance_message_time is None:
-            self.lidar_distance_fresh = False
-
-        else:
-            lidar_distance_age = current_time - self.last_lidar_distance_message_time
-            lidar_distance_age_seconds = lidar_distance_age.nanoseconds / 1_000_000_000
-            self.lidar_distance_fresh = lidar_distance_age_seconds <= self.sensor_timeout
 
 
 

@@ -6,7 +6,7 @@ from rclpy.qos import (
     HistoryPolicy,
     DurabilityPolicy
 )
-from std_msgs.msg import String, Float32
+from restaurant_robot_interfaces.msg import LidarObservation
 
 class LidarObstaclePublisher(Node):
 
@@ -19,13 +19,8 @@ class LidarObstaclePublisher(Node):
             durability=DurabilityPolicy.VOLATILE
         )
         self.publisher = self.create_publisher(
-            String,
-            'lidar_status',
-            10
-        )
-        self.distance_publisher = self.create_publisher(
-             Float32,
-            'lidar_distance',
+            LidarObservation,
+            '/lidar_observation',
             sensor_qos
         )
 
@@ -33,26 +28,27 @@ class LidarObstaclePublisher(Node):
 
         self.timer = self.create_timer(
             1.0,
-            self.publish_lidar_status
+            self.publish_lidar_observation
         )
 
-    def publish_lidar_status(self):
-        message = String()
-        distance_message = Float32()
+    def publish_lidar_observation(self):
+        message = LidarObservation()
+
         if self.obstacle_present:
-            message.data = 'OBSTACLE_DETECTED'
-            distance_message.data = 0.6
+            message.status = 'OBSTACLE_DETECTED'
+            message.distance = 0.6
         else:
-            message.data = 'PATH_CLEAR'
-            distance_message.data = 3.0
+            message.status = 'PATH_CLEAR'
+            message.distance = 3.0
+
+        message.valid = True
+
         self.publisher.publish(message)
-        self.distance_publisher.publish(distance_message)
-        self.obstacle_present = not self.obstacle_present
+
         self.get_logger().info(
-            f'Lidar_obstacle: {message.data}'
-        )
-        self.get_logger().info(
-            f'lidar distance: {distance_message.data}'
+            f'LiDAR observation: status={message.status}, '
+            f'distance={message.distance:.2f} m, '
+            f'valid={message.valid}'
         )
 
 def main(args=None):
