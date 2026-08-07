@@ -7,6 +7,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(
     ${PROJECT_NAME}
     msg/LidarObservation.msg
+    msg/RobotStatus.msg
 )
 
 ament_package()

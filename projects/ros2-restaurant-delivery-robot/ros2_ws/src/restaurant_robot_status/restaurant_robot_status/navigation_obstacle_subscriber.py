@@ -10,6 +10,7 @@ from rclpy.qos import (
 from std_msgs.msg import String, Float32
 from rcl_interfaces.msg import SetParametersResult
 from restaurant_robot_interfaces.msg import LidarObservation
+from restaurant_robot_interfaces.msg import RobotStatus
 
 class NavigationObstacleSubscriber(Node):
     def __init__(self):
@@ -62,6 +63,12 @@ class NavigationObstacleSubscriber(Node):
         self.rear_distance = 0.0
         self.last_rear_distance_message_time = None
         self.rear_distance_fresh = False
+
+        self.robot_status_publisher = self.create_publisher(
+            RobotStatus,
+            '/robot_status',
+            10
+        )
 
         self.subscription = self.create_subscription(
             String,
@@ -131,6 +138,23 @@ class NavigationObstacleSubscriber(Node):
 
         return SetParametersResult(successful=True)
 
+    def publish_robot_status(
+        self,
+        robot_ready,
+        motor_command,
+        safety_status,
+        reason
+    ):
+        message = RobotStatus()
+        
+        message.robot_ready = robot_ready
+        message.motor_command = motor_command
+        message.safety_status = safety_status
+        message.recovery_state = self.recovery_state
+        message.reason = reason
+
+        self.robot_status_publisher.publish(message)
+
     def receive_obstacle(self, message):
         self.camera_state = message.data
         self.last_camera_message_time = self.get_clock().now()
@@ -168,7 +192,12 @@ class NavigationObstacleSubscriber(Node):
 
     def decide_navigation(self):
         self.update_front_state()
+
         motor_command = String()
+
+        robot_ready = True 
+        safety_status = 'SAFE'
+        reason = 'Navigation system operating normally'
 
         if (
             not self.camera_fresh
@@ -180,6 +209,10 @@ class NavigationObstacleSubscriber(Node):
             or not self.right_fresh
         ):
             motor_command.data = 'STOP'
+            robot_ready = False
+            safety_status = 'SENSOR_STALE'
+            reason = 'One or more required sensors are stale' 
+
         elif (
             not math.isfinite(self.lidar_distance)
             or self.lidar_distance <= 0.0
@@ -187,6 +220,9 @@ class NavigationObstacleSubscriber(Node):
             or self.rear_distance <= 0.0
         ):
             motor_command.data = 'STOP'
+            robot_ready = False
+            safety_status = 'INVALID_DISTANCE'
+            reason = 'LiDAR or rear distance is invalid'
         elif (
             self.front_state == 'UNKNOWN'
             or self.left_state == "UNKNOWN"
@@ -194,10 +230,16 @@ class NavigationObstacleSubscriber(Node):
             or self.rear_state == 'UNKNOWN'
         ):
             motor_command.data = 'STOP'
-      
+            robot_ready = False 
+            safety_status = 'SENSOR_UNKNOWN'
+            reason = 'One or more sensor states are unknown'
 
+      
         elif self.recovery_state == 'RECOVERY_FAILED':
             motor_command.data = 'STOP_AND_WAIT'
+            robot_ready = False
+            safety_status = 'RECOVERY_FAILED'
+            reason = 'Recovery failed; operator assistance is required'   
 
 
         elif self.recovery_state == 'REVERSING':
@@ -208,36 +250,65 @@ class NavigationObstacleSubscriber(Node):
             if recovery_elapsed_seconds >= self.maximum_recovery_duration:
                 self.recovery_state = 'RECOVERY_FAILED'
                 motor_command.data = 'STOP_AND_WAIT'
+                robot_ready = False
+                safety_status = 'RECOVERY_FAILED'
+                reason = 'Maximum recovery duration was exceeded'
 
             elif (
                 self.rear_state != 'PATH_CLEAR'
                 or self.rear_distance <= 1.0
             ):
                 motor_command.data = 'STOP'
+                robot_ready = False
+                safety_status = 'REAR_BLOCKED' 
+                reason = 'Robot cannot reverse because the rear path is blocked'
 
 
 
             else:
                 motor_command.data  = 'STOP'
+                robot_ready = False
+                safety_status = 'RECOVERY_STOPPED'
+                reason = 'Recovery is active but reversing is not currently safe'
 
         elif self.front_state == 'OBSTACLE_DETECTED':
              if self.left_fresh and self.left_state == 'PATH_CLEAR':
                   motor_command.data = 'TURN_LEFT'
+                  robot_ready = True
+                  safety_status = 'AVOIDING_OBSTACLE' 
+                  reason = 'Front obstacle detected; turning left through a clear path'
 
              elif self.right_fresh and self.right_state == 'PATH_CLEAR':
                   motor_command.data = 'TURN_RIGHT'
+                  robot_ready = True 
+                  safety_status = 'AVOIDING_OBSTACLE'
+                  reason = 'Front obstacle detected; turning right through a clear path'
 
              else:
                   motor_command.data = 'STOP'
-
+                  robot_ready = False 
+                  safety_status = 'NO_SAFE_PATH'
+                  reason = 'Front obstacle detected and no clear side path is available'
 
         elif self.front_state == 'PATH_CLEAR':
             motor_command.data = 'MOVE_FORWARD'
+            robot_ready = True
+            safety_status = 'SAFE'
+            reason = 'Front path is clear' 
 
         else:
              motor_command.data = 'STOP'
+             robot_ready = False 
+             safety_status = 'UNHANDELED_STALE' 
+             reason = 'Navigation state does not match a known safe condition'
 
         self.motor_command_publisher.publish(motor_command)
+        self.publish_robot_status(
+            robot_ready,
+            motor_command.data,
+            safety_status,
+            reason
+        )
         self.get_logger().info(
              f'Camera: {self.camera_state}, LiDAR: {self.lidar_state}, Front: {self.front_state}, Left: {self.left_state},  Left fresh: {self.left_fresh}, Right: {self.right_state}, Right fresh: {self.right_fresh}, Command: {motor_command.data}'
         )
@@ -253,6 +324,13 @@ class NavigationObstacleSubscriber(Node):
             camera_age_seconds = camera_age.nanoseconds / 1_000_000_000
             self.camera_fresh = camera_age_seconds <= self.sensor_timeout
 
+        if self.last_lidar_message_time is None:
+            self.lidar_fresh = False
+
+        else:
+            lidar_age = current_time - self.last_lidar_message_time
+            lidar_age_seconds = lidar_age.nanoseconds / 1_000_000_000
+            self.lidar_fresh = lidar_age_seconds <= self.sensor_timeout
 
 
         if self.last_left_message_time is None:
