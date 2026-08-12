@@ -8,6 +8,7 @@ from rclpy.qos import (
     DurabilityPolicy
 )
 from std_msgs.msg import String, Float32
+from std_srvs.srv import Trigger
 from rcl_interfaces.msg import SetParametersResult
 from restaurant_robot_interfaces.msg import LidarObservation
 from restaurant_robot_interfaces.msg import RobotStatus
@@ -29,8 +30,8 @@ class NavigationObstacleSubscriber(Node):
         self.recovery_clear_distance = 1.5
         self.recovery_start_time = None
         self.maximum_recovery_duration = 5.0
-
-        self.recovery_start_time = 'REVERSING' 
+        self.robot_ready = False
+        self.readiness_reason = 'No navigation decision is available yet'
         
 
         self.left_state = 'UNKNOWN'
@@ -68,6 +69,12 @@ class NavigationObstacleSubscriber(Node):
             RobotStatus,
             '/robot_status',
             10
+        )
+
+        self.readiness_service = self.create_service(
+            Trigger,
+            'check_robot_ready',
+            self.check_robot_ready_callback
         )
 
         self.subscription = self.create_subscription(
@@ -137,6 +144,11 @@ class NavigationObstacleSubscriber(Node):
 
 
         return SetParametersResult(successful=True)
+
+    def check_robot_ready_callback(self,request, response):
+        response.success = self.robot_ready
+        response.message = self.readiness_reason
+        return response
 
     def publish_robot_status(
         self,
@@ -302,6 +314,8 @@ class NavigationObstacleSubscriber(Node):
              safety_status = 'UNHANDELED_STALE' 
              reason = 'Navigation state does not match a known safe condition'
 
+        self.robot_ready = robot_ready
+        self.readiness_reason = reason
         self.motor_command_publisher.publish(motor_command)
         self.publish_robot_status(
             robot_ready,

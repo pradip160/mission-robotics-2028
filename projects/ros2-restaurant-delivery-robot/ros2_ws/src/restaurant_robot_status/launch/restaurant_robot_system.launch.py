@@ -49,6 +49,11 @@ def generate_launch_description():
         ),
         Node(
             package='restaurant_robot_status',
+            executable='rear_obstacle_publisher',
+            output='screen'
+        ),
+        Node(
+            package='restaurant_robot_status',
             executable='navigation_obstacle_subscriber',
             parameters=[
                 config_file,

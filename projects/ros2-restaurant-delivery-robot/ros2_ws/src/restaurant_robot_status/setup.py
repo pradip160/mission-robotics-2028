@@ -38,7 +38,7 @@ setup(
             'right_obstacle_publisher = restaurant_robot_status.right_obstacle_publisher:main',
             'qos_depth_test_subscriber = restaurant_robot_status.qos_depth_test_subscriber:main',
             'qos_depth_test_publisher = restaurant_robot_status.qos_depth_test_publisher:main',
-
+            'robot_readiness_client = restaurant_robot_status.robot_readiness_client:main',
 
        ]
    },	
