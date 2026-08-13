@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from geometry_msgs.msg import Twist
 
 
 class MotorControlSubscriber(Node):
@@ -13,33 +14,68 @@ class MotorControlSubscriber(Node):
             10
         )
 
+        self.cmd_vel_publisher = self.create_publisher(
+            Twist,
+            'cmd_vel',
+            10
+        )
+
     def receive_motor_command(self, message):
         motor_command = message.data
+        cmd_vel =Twist() 
         if motor_command == 'MOVE_FORWARD':
+            cmd_vel.linear.x = 0.2
+            cmd_vel.angular.z = 0.0
+
+            self.cmd_vel_publisher.publish(cmd_vel)
+
             self.get_logger().info(
                 'Both wheels moving forward at the same speed'
             )
         elif motor_command == 'TURN_LEFT':
+            cmd_vel.linear.x = 0.1
+            cmd_vel.angular.z = 0.5
+
+            self.cmd_vel_publisher.publish(cmd_vel)
             self.get_logger().info(
                 'Left wheel slowing down and right wheel moving faster'
             )
         elif motor_command == 'TURN_RIGHT':
+            cmd_vel.linear.x = 0.1
+            cmd_vel.angular.z = -0.5
+
+            self.cmd_vel_publisher.publish(cmd_vel)
+
             self.get_logger().info(
                 'Right wheel slowing down and left wheel moving faster'
             )
         elif motor_command == 'MOVE_BACKWARD':
+            cmd_vel.linear.x = -0.2
+            cmd_vel.angular.z = 0.0
+
+            self.cmd_vel_publisher.publish(cmd_vel)
+
             self.get_logger().info(
                 'Both wheels move backward'
             )
         elif motor_command == 'STOP_AND_WAIT':
+            cmd_vel.linear.x = 0.0
+            cmd_vel.angular.z = 0.0
+            self.cmd_vel_publisher.publish(cmd_vel)
             self.get_logger().info(
                 'Both wheels stop and wait'
             )
         elif motor_command == 'STOP':
+            cmd_vel.linear.x = 0.0 
+            cmd_vel.angular.z = 0.0
+            self.cmd_vel_publisher.publish(cmd_vel)
             self.get_logger().info(
                 'Both wheels stop safely'
             )
         else:
+            cmd_vel.linear.x = 0.0
+            cmd_vel.angular.z = 0.0 
+            self.cmd_vel_publisher.publish(cmd_vel)
             self.get_logger().warning(
                 'Unknown motor command - stopping safely'
             )
