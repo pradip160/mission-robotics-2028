@@ -1,0 +1,200 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 4a4f84d..03fb391 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,10 +1,190 @@[m
+[31m-## Introduction Vedio [m
+[31m- At the beginning of this journey, I recorded a short introduction vedio to document my motivation and long-term goal.[m
+[32m+[m[32m# Mission Robotics 2028[m
+ [m
+[31m-The purpose this project is to build a strong foundation in robotics, AI, Python, Linux, ROS2, autonomous navigation, and research-oriented project work.[m
+[32m+[m[32m> Building from the foundations toward robotics research — one project, experiment, mistake, and improvement at a time.[m
+ [m
+[31m-Vedio: [Mission korea Robotics Journey - Introduction(https://youtube.com/shorts/9CDGlcKAFNo?is=RggOSMLbgN6R4dO3)[m
+[32m+[m[32m## The Mission[m
+ [m
+[31m-I plan to record a secound vedio before applying to master's program, where I will reflect on my progress, completed projects, and future research interests. [m
+[32m+[m[32mMission Robotics 2028 represents my future, my goal, and my ambition.[m
+ [m
+[32m+[m[32mI started this journey after graduating with a 2:2 degree and struggling to begin the career I wanted. I started robotics from almost zero, later than many others, but I believe consistency, discipline, and the work I build from now on can demonstrate more about my ability than one academic result alone.[m
+ [m
+[32m+[m[32mI am building this journey while working in a restaurant and studying alongside it.[m
+[32m+[m
+[32m+[m[32mThis repository records where I started, what I learn, what I build, the mistakes I make, and the engineer and researcher I am working to become.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Why This Repository Exists[m
+[32m+[m
+[32m+[m[32mI created this repository to keep evidence of my progress instead of allowing the journey to disappear with time.[m
+[32m+[m
+[32m+[m[32mI regularly push my code, experiments, and learning notes. Since Day 1, I have tried to record:[m
+[32m+[m
+[32m+[m[32m- what I learned[m
+[32m+[m[32m- what problems I faced[m
+[32m+[m[32m- how I approached and debugged them[m
+[32m+[m[32m- what I changed[m
+[32m+[m[32m- where the related code can be found[m
+[32m+[m
+[32m+[m[32mOne day I want to be able to return to the beginning of this repository, compare it with where I reached, and know that the effort was worth it.[m
+[32m+[m
+[32m+[m[32m**I keep track of the journey from Day 1.**[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Current Focus[m
+[32m+[m
+[32m+[m[32mI am currently building my foundation in robotics through ROS 2 while developing my restaurant robot project.[m
+[32m+[m
+[32m+[m[32mI recently started robot simulation and am gradually connecting the ROS 2 concepts I previously learned to a robot that I can actually see, test, and control.[m
+[32m+[m
+[32m+[m[32mAlongside robotics, I am also studying the mathematics required for more advanced robotics and future research.[m
+[32m+[m
+[32m+[m[32m### How I Learn[m
+[32m+[m
+[32m+[m[32mI am not a textbook-only learner.[m
+[32m+[m
+[32m+[m[32mI learn best by understanding a concept, attempting to implement it, making mistakes, finding out why something failed, improving it, and trying again.[m
+[32m+[m
+[32m+[m[32m**Learn → Try → Make mistakes → Understand → Improve → Repeat**[m
+[32m+[m
+[32m+[m[32mI followed this approach while learning ROS 2 and am now applying the same method to simulation and robotics development.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Main Project — Restaurant Robot[m
+[32m+[m
+[32m+[m[32mMy main project is a ROS 2 based restaurant robot.[m
+[32m+[m
+[32m+[m[32mWorking inside restaurants has made me familiar with busy kitchen and restaurant environments and the physical demands placed on people working long shifts.[m
+[32m+[m
+[32m+[m[32mThat experience strongly influences the kind of robotics problems I want to explore.[m
+[32m+[m
+[32m+[m[32mThe restaurant robot is currently my learning and experimentation platform for navigation, robot safety, sensing, decision making, communication between ROS 2 nodes, and simulation.[m
+[32m+[m
+[32m+[m[32m### Current Capabilities[m
+[32m+[m
+[32m+[m[32mThe robot can currently:[m
+[32m+[m
+[32m+[m[32m- move forward and backward[m
+[32m+[m[32m- turn left and right[m
+[32m+[m[32m- receive obstacle information[m
+[32m+[m[32m- make simple navigation decisions[m
+[32m+[m[32m- choose a clear direction when obstacles are reported[m
+[32m+[m[32m- perform recovery behaviour[m
+[32m+[m[32m- enter safe stop conditions[m
+[32m+[m[32m- stop safely when an unknown motor command is received[m
+[32m+[m[32m- convert navigation decisions into velocity commands[m
+[32m+[m[32m- physically move and respond inside Gazebo simulation[m
+[32m+[m
+[32m+[m[32mThe current obstacle information is still produced by simulated ROS 2 sensor publishers.[m
+[32m+[m
+[32m+[m[32mThe next major step is connecting actual Gazebo sensors such as LiDAR so that obstacles in the simulated environment are detected by the robot itself.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Technology Stack[m
+[32m+[m
+[32m+[m[32m### Programming[m
+[32m+[m[32m- Python[m
+[32m+[m[32m- C++ — planned as the next major programming language[m
+[32m+[m
+[32m+[m[32m### ROS 2[m
+[32m+[m[32m- Publishers and subscribers[m
+[32m+[m[32m- Topics[m
+[32m+[m[32m- Custom messages[m
+[32m+[m[32m- Services[m
+[32m+[m[32m- QoS[m
+[32m+[m[32m- Parameters[m
+[32m+[m[32m- Launch files[m
+[32m+[m
+[32m+[m[32m### Robot Description & Simulation[m
+[32m+[m[32m- URDF[m
+[32m+[m[32m- TF[m
+[32m+[m[32m- RViz[m
+[32m+[m[32m- Gazebo[m
+[32m+[m[32m- Differential drive[m
+[32m+[m[32m- ROS 2 ↔ Gazebo communication[m
+[32m+[m
+[32m+[m[32m### Development[m
+[32m+[m[32m- Ubuntu Linux[m
+[32m+[m[32m- Git[m
+[32m+[m[32m- GitHub[m
+[32m+[m
+[32m+[m[32mPython is currently my primary robotics language. As I develop my C++ skills, I plan to use both languages where they are most appropriate rather than replacing one completely.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Long-Term Research Direction[m
+[32m+[m
+[32m+[m[32mMy long-term goal is to develop robots that can work safely and intelligently alongside humans in busy and constantly changing environments such as commercial kitchens.[m
+[32m+[m
+[32m+[m[32mI am interested in robots that can:[m
+[32m+[m
+[32m+[m[32m- navigate safely through crowded environments[m
+[32m+[m[32m- distinguish between objects and understand their surroundings[m
+[32m+[m[32m- anticipate human movement from behaviour[m
+[32m+[m[32m- cooperate naturally with human coworkers[m
+[32m+[m[32m- grasp and manipulate objects reliably[m
+[32m+[m[32m- handle tools and ingredients safely[m
+[32m+[m[32m- manage tasks according to human orders[m
+[32m+[m[32m- monitor stock and operational state[m
+[32m+[m[32m- manage battery and long-duration operation[m
+[32m+[m[32m- maintain safe physical behaviour in unpredictable environments[m
+[32m+[m
+[32m+[m[32mA kitchen is an environment where a wrong movement or grasp can be costly or dangerous. Because of this, I am especially interested in reliable perception, manipulation, human-aware navigation, and safe decision making.[m
+[32m+[m
+[32m+[m[32mMy biggest interest is not simply making robots execute predefined movements.[m
+[32m+[m
+[32m+[m[32mI want to understand how a robot can:[m
+[32m+[m
+[32m+[m[32m**observe → understand → predict → decide → act safely**[m
+[32m+[m
+[32m+[m[32mEventually, I want to explore robotic systems capable of understanding human behaviour and cooperating with people more naturally, closer to the way human coworkers continuously adapt to one another.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## Progress & Evidence[m
+[32m+[m
+[32m+[m[32mThe main evidence of my work is contained inside this repository.[m
+[32m+[m
+[32m+[m[32mIf you want to understand how I have developed, I recommend starting with the **daily learning logs**.[m
+[32m+[m
+[32m+[m[32mEach log records the topic I studied, what I understood, problems I encountered, debugging attempts, changes I made, and links or locations for the related implementation.[m
+[32m+[m
+[32m+[m[32m### Explore[m
+[32m+[m
+[32m+[m[32m- [Daily Learning Logs](learning-log/2026/)[m
+[32m+[m[32m- [Restaurant Robot Project](projects/ros2-restaurant-delivery-robot/)[m
+[32m+[m[32m- [Roadmap](roadmap.md)[m
+[32m+[m[32m- [Portfolio Summary](portfolio-summary.md)[m
+[32m+[m
+[32m+[m[32mIf you are interested in a particular topic, the learning logs are organized by topic and day so that the progression can be followed from the beginning.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 2028 Goal[m
+[32m+[m
+[32m+[m[32mBy 2028, I want this repository to contain much more than student exercises.[m
+[32m+[m
+[32m+[m[32mMy goal is to develop it into a research-oriented robotics portfolio containing:[m
+[32m+[m
+[32m+[m[32m- strong robotics projects[m
+[32m+[m[32m- autonomous robot simulations[m
+[32m+[m[32m- physical robot experiments[m
+[32m+[m[32m- research paper reproductions[m
+[32m+[m[32m- controlled experiments and evaluation[m
+[32m+[m[32m- advanced navigation and perception work[m
+[32m+[m[32m- manipulation[m
+[32m+[m[32m- human–robot interaction[m
+[32m+[m[32m- original research work[m
+[32m+[m
+[32m+[m[32mMy academic goal is to become capable of contributing meaningfully to a robotics research laboratory and competitive for funded graduate study.[m
+[32m+[m
+[32m+[m[32mMost importantly, I want this repository to preserve where I started, how I changed direction, what I struggled with, what I built, and how far the journey eventually took me.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m**Mission Robotics 2028 is a work in progress.**[m
+[32m+[m
+[32m+[m[32mSo am I.[m
