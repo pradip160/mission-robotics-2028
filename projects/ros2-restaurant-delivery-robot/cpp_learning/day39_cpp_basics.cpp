@@ -6,7 +6,7 @@ int main() {
     bool robot_ready = true; 
 
 
-    if (battery > 20 && obstacle_distance > 0.8) {
+    if (battery > 20 && obstacle_distance > 0.8 && robot_ready) {
         std::cout<< "MOVE_FORWARD" << std::endl;
     }
     else {
