@@ -1,0 +1,136 @@
+Day 42 – Robotics Math: Path Projection & Cross-Track Error
+
+Today I learned how vector projection can describe a robot's position relative to a planned path.
+
+Key Concepts
+
+Given:
+
+- Start point: A
+- Point on planned path: B
+- Current robot position: P
+
+1. Planned direction
+
+[
+d=B-A
+]
+
+This is important when the robot does not start at (0,0).
+
+2. Unit direction vector
+
+[
+\hat d=\frac{d}{||d||}
+]
+
+This represents the forward direction of the planned path.
+
+3. Robot displacement from start
+
+[
+r=P-A
+]
+
+4. Distance travelled along the path
+
+[
+s=r\cdot\hat d
+]
+
+This tells how far the robot has progressed in the planned direction.
+
+5. Closest point on the planned path
+
+Relative to the start:
+
+[
+p_{\parallel}=s\hat d
+]
+
+Actual world coordinate:
+
+[
+C=A+p_{\parallel}
+]
+
+6. Off-path error
+
+[
+p_{\perp}=P-C
+]
+
+Distance from the path:
+
+[
+e=||p_{\perp}||
+]
+
+This is the robot's cross-track error.
+
+Example Practised
+
+[
+A=(-7,-6),\quad B=(4,5),\quad P=(-2,3)
+]
+
+Results:
+
+[
+d=(11,11)
+]
+
+[
+\hat d\approx(0.707,0.707)
+]
+
+[
+r=(5,9)
+]
+
+[
+s\approx9.90
+]
+
+Closest path point:
+
+[
+C=(0,1)
+]
+
+Off-path vector:
+
+[
+P-C=(-2,2)
+]
+
+Cross-track error:
+
+[
+||P-C||\approx2.83
+]
+
+So the robot has progressed approximately 9.90 units along the planned path and is 2.83 units away from it.
+
+Main Understanding
+
+Points tell WHERE an object is.
+Vectors tell HOW to move from one point to another.
+
+Memory chain:
+
+[
+\boxed{
+\text{planned direction}
+\rightarrow
+\text{unit direction}
+\rightarrow
+\text{forward progress}
+\rightarrow
+\text{closest path point}
+\rightarrow
+\text{sideways error}
+}
+]
+
+Today I became more confident with the calculations and focused on understanding what the mathematics represents physically in robot navigation.
