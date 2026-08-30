@@ -1,6 +1,15 @@
 #include <iostream>
 #include <string>
 
+struct RobotState 
+{
+    int battery_percentage;
+    double obstacle_distance;
+    bool left_path;
+    bool right_path;
+    bool emergency_status;
+};
+
 bool is_battery_safe(int battery_percentage)
 {
     if (battery_percentage > 20) {
@@ -31,34 +40,53 @@ std::string decide_movement (double obstacle_distance, bool left_path, bool righ
         return "PATH_BLOCKED_STOP";
     }
 }
+std::string decide_robot_command(int battery_percentage, double obstacle_distance, bool left_path, bool right_path, bool emergency_status)
+{
+    if (is_emergency(emergency_status))
+    {   
+         return "EMERGENCY_STOP";
+    }
+    else if (!is_battery_safe(battery_percentage)) {
+         return "LOW_BATTERY_STOP";
+    } 
+    else {
+         return decide_movement(obstacle_distance, left_path, right_path);
+    }
+} 
 
 void print_robot_command(std::string command)
 {
-    std::cout << command << std::end;
+    std::cout << command << std::endl;
 }
 
 
 int main() {
+
+      RobotState robot;
+
+      robot.battery_percentage = 30;
+      robot.obstacle_distance = 1.5; 
+      robot.left_path = true;
+      robot.right_path = true ;
+      robot.emergency_status = false;
+
+      std::string robot_command = decide_robot_command(
+          robot.battery_percentage,
+          robot.obstacle_distance,
+          robot.left_path,
+          robot.right_path,
+          robot.emergency_status
+      );
+      print_robot_command(robot_command);
+      
+      return 0;
  
-      int battery_percentage = 30;
-      double obstacle_distance = 1.5;
-      bool left_path = true;
-      bool right_path = true ;
-      bool emergency_status = false;
- 
-     if (is_emergency(emergency_status)) {
-         std::cout<<"EMERGENCY_STOP" <<std::endl;
-     }
-     else if (!is_battery_safe(battery_percentage)) {
-         std::cout<<"LOW_BATTERY_STOP" <<std::endl;
-     }
-     else {
-         std::string movement_command = decide_movement(obstacle_distance, left_path, right_path);
-         print_robot_command(movement_command);
-     } 
-     return 0; 
- }
+} 
+     
+
 
      
 
  
+
+
