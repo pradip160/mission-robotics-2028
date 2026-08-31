@@ -10,6 +10,17 @@ struct RobotState
     bool emergency_status;
 };
 
+enum class RobotCommand 
+{
+    EMERGENCY_STOP,
+    LOW_BATTERY_STOP,
+    MOVE_FORWARD,
+    TURN_LEFT,
+    TURN_RIGHT,
+    PATH_BLOCKED_STOP
+};
+
+
 bool is_battery_safe(int battery_percentage)
 {
     if (battery_percentage > 20) {
@@ -25,40 +36,58 @@ bool is_emergency(bool emergency_status)
     return emergency_status;
 }
 
-std::string decide_movement (double obstacle_distance, bool left_path, bool right_path)
-{
-    if (obstacle_distance >= 0.8) {
-        return "MOVE_FORWARD";
-    }
-    else if (left_path) {
-        return "TURN_LEFT";
-    } 
-    else if (right_path) {
-        return "TURN_RIGHT";
-    }
-    else {
-        return "PATH_BLOCKED_STOP";
-    }
-}
-std::string decide_robot_command(int battery_percentage, double obstacle_distance, bool left_path, bool right_path, bool emergency_status)
-{
-    if (is_emergency(emergency_status))
-    {   
-         return "EMERGENCY_STOP";
-    }
-    else if (!is_battery_safe(battery_percentage)) {
-         return "LOW_BATTERY_STOP";
-    } 
-    else {
-         return decide_movement(obstacle_distance, left_path, right_path);
-    }
-} 
 
-void print_robot_command(std::string command)
+RobotCommand decide_movement(const RobotState& robot)
 {
-    std::cout << command << std::endl;
+    if (robot.emergency_status)
+        return RobotCommand::EMERGENCY_STOP;
+
+    else if (robot.battery_percentage <= 20)
+        return RobotCommand::LOW_BATTERY_STOP;
+
+    else if (robot.obstacle_distance > 1.5)
+        return RobotCommand::MOVE_FORWARD;
+
+    else if (robot.left_path)
+        return RobotCommand::TURN_LEFT;
+
+    else if (robot.right_path)
+        return RobotCommand::TURN_RIGHT;
+ 
+    else 
+        return RobotCommand::PATH_BLOCKED_STOP;
 }
 
+
+void print_robot_command(RobotCommand command)
+{
+switch (command)
+    {
+    case RobotCommand::EMERGENCY_STOP:
+        std::cout << "EMERGENCY_STOP" << std::endl;
+        break;
+    case RobotCommand::LOW_BATTERY_STOP:
+        std::cout <<"LOW_BATTERY_STOP" << std::endl;
+        break;
+
+    case RobotCommand::MOVE_FORWARD:
+        std::cout <<"MOVE_FORWARD" << std::endl;
+        break;
+ 
+    case RobotCommand::TURN_LEFT:
+        std::cout <<"TURN_LEFT" << std::endl;
+        break;
+
+    case RobotCommand::TURN_RIGHT:
+        std::cout << "TURN_RIGHT" << std::endl;
+        break;
+
+    case RobotCommand::PATH_BLOCKED_STOP:
+        std::cout << "PATH_BLOCKED_STOP" << std::endl;
+        break;
+ 
+    }
+}
 
 int main() {
 
@@ -70,14 +99,9 @@ int main() {
       robot.right_path = true ;
       robot.emergency_status = false;
 
-      std::string robot_command = decide_robot_command(
-          robot.battery_percentage,
-          robot.obstacle_distance,
-          robot.left_path,
-          robot.right_path,
-          robot.emergency_status
-      );
-      print_robot_command(robot_command);
+
+      RobotCommand movement_command = decide_movement(robot);
+      print_robot_command(movement_command);
       
       return 0;
  
