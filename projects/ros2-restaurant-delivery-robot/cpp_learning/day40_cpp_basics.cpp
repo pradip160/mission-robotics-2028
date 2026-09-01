@@ -31,9 +31,12 @@ bool is_battery_safe(int battery_percentage)
     }
 }
 
-bool is_emergency(bool emergency_status)
+bool is_front_path_clear(double obstacle_distance)
 {
-    return emergency_status;
+    if(obstacle_distance <= 1.5)
+        return  false;
+    else 
+        return true;
 }
 
 
@@ -42,10 +45,10 @@ RobotCommand decide_movement(const RobotState& robot)
     if (robot.emergency_status)
         return RobotCommand::EMERGENCY_STOP;
 
-    else if (robot.battery_percentage <= 20)
+    else if (!is_battery_safe(robot.battery_percentage))
         return RobotCommand::LOW_BATTERY_STOP;
 
-    else if (robot.obstacle_distance > 1.5)
+    else if (is_front_path_clear(robot.obstacle_distance))
         return RobotCommand::MOVE_FORWARD;
 
     else if (robot.left_path)
@@ -94,7 +97,7 @@ int main() {
       RobotState robot;
 
       robot.battery_percentage = 30;
-      robot.obstacle_distance = 1.5; 
+      robot.obstacle_distance = 1.0; 
       robot.left_path = true;
       robot.right_path = true ;
       robot.emergency_status = false;
