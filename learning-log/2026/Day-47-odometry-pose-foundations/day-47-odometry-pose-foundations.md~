@@ -1,0 +1,185 @@
+# Day 47 — Odometry Foundations: Robot Pose (x, y, θ)
+
+## Mission Korea 2028
+
+### Today's Focus
+
+Understanding what `x`, `y`, and `θ (theta)` represent before continuing with wheel odometry calculations.
+
+---
+
+## 1. Robot Pose
+
+For a 2D mobile robot, the pose is written as:
+
+`(x, y, θ)`
+
+Pose tells us:
+
+* `x` → the robot's position along the world's x-axis
+* `y` → the robot's position along the world's y-axis
+* `θ` → the direction/orientation the robot is facing
+
+### Important distinction
+
+`x` and `y` describe **where the robot is in the world**.
+
+`θ` describes **which direction the robot is facing**.
+
+---
+
+## 2. World Coordinates
+
+In the world/map frame:
+
+* `+x` = right
+* `-x` = left
+* `+y` = up
+* `-y` = down
+
+Important:
+
+`x` does NOT always mean forward.
+
+`y` does NOT always mean forward.
+
+Forward belongs to the **robot**, while x and y belong to the **world/map**.
+
+---
+
+## 3. Theta (θ)
+
+Theta connects the robot's forward direction with the world coordinate system.
+
+Examples:
+
+* `θ = 0°` → robot faces `+x`
+* `θ = 90°` → robot faces `+y`
+* `θ = 180°` → robot faces `-x`
+* `θ = 270°` → robot faces `-y`
+
+---
+
+## 4. Forward Motion Depends on θ
+
+### θ = 0°
+
+Robot moves forward toward `+x`.
+
+Result:
+
+* x increases
+* y stays the same
+* θ stays the same
+
+### θ = 90°
+
+Robot moves forward toward `+y`.
+
+Result:
+
+* x stays the same
+* y increases
+* θ stays the same
+
+### θ = 180°
+
+Robot moves forward toward `-x`.
+
+Result:
+
+* x decreases
+* y stays the same
+* θ stays the same
+
+### θ = 270°
+
+Robot moves forward toward `-y`.
+
+Result:
+
+* x stays the same
+* y decreases
+* θ stays the same
+
+---
+
+## 5. Diagonal Headings
+
+If the robot faces `45°`, its forward direction points toward both `+x` and `+y`.
+
+Therefore:
+
+* x increases
+* y increases
+* θ stays the same if the robot moves straight
+
+If the robot faces `135°`, its forward direction points toward `-x` and `+y`.
+
+Therefore:
+
+* x decreases
+* y increases
+* θ stays the same if the robot moves straight
+
+---
+
+## 6. Key Concept Learned
+
+A useful mental model:
+
+**x and y = where the robot is**
+
+**θ = which way the robot is facing**
+
+**forward = whatever direction θ currently points**
+
+A robot can move straight forward while changing:
+
+* only x
+* only y
+* or both x and y
+
+depending on its current orientation.
+
+---
+
+## 7. Connection to Odometry
+
+Wheel encoders do not directly tell the robot its x, y, and θ.
+
+They provide information about how far the wheels moved.
+
+The robot must use wheel movement together with its current orientation to estimate its new pose.
+
+This is the basis of odometry.
+
+---
+
+## Learning Evidence
+
+Today I initially confused:
+
+* x with "forward"
+* y with "forward/backward"
+
+After working through several orientations, I understood that x and y belong to the world coordinate frame, while forward belongs to the robot.
+
+I correctly reasoned that:
+
+* At `θ = 180°`, moving forward decreases x.
+* At `θ = 270°`, moving forward decreases y.
+* At `θ = 45°`, both x and y increase.
+* At `θ = 135°`, x decreases and y increases.
+
+---
+
+## Next Study Session
+
+Continue from:
+
+**How different left-wheel and right-wheel distances cause θ to change.**
+
+Next conceptual question:
+
+If the left wheel travels 1 m and the right wheel travels 2 m, which direction does the robot curve, and why?
