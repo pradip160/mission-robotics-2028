@@ -1,7 +1,9 @@
 import rclpy
 import math 
+
 from rclpy.node import Node 
 from sensor_msgs.msg import JointState 
+from nav_msgs.msg import Odometry
 
 class OdometryNode(Node):
 
@@ -13,6 +15,11 @@ class OdometryNode(Node):
         self.wheel_radius = 0.10
         self.wheel_separation = 0.60
 
+        self.x = 0.0
+        self.y = 0.0 
+        self.theta = 0.00
+
+
         self.previous_left_angle = None
         self.previous_right_angle = None
 
@@ -21,6 +28,11 @@ class OdometryNode(Node):
             JointState,
             '/world/restaurant_world/model/restaurant_robot/joint_state',
             self.joint_state_callback,
+            10
+        )
+        self.odom_publisher = self.create_publisher(
+            Odometry,
+            '/odom',
             10
         )
 
@@ -48,14 +60,41 @@ class OdometryNode(Node):
             delta_right_distance - delta_left_distance
         ) / self.wheel_separation
 
+        theta_mid = self.theta + delta_theta / 2.0
+
+        delta_x = delta_s * math.cos(theta_mid)
+        delta_y = delta_s * math.sin(theta_mid)
+
+        self.x += delta_x
+        self.y += delta_y
+        self.theta += delta_theta
+
+        odom_msg = Odometry()
+
+        odom_msg.header.stamp = self.get_clock().now().to_msg()
+        odom_msg.header.frame_id = 'odom'
+        odom_msg.child_frame_id = 'base_link'
+
+        odom_msg.pose.pose.position.x = self.x
+        odom_msg.pose.pose.position.y = self.y
+        odom_msg.pose.pose.position.z = 0.0
+
+        odom_msg.pose.pose.orientation.x = 0.0
+        odom_msg.pose.pose.orientation.y = 0.0
+        odom_msg.pose.pose.orientation.z = math.sin(self.theta / 2.0)
+        odom_msg.pose.pose.orientation.w = math.cos(self.theta / 2.0)
+
+        self.odom_publisher.publish(odom_msg)
 
         self.previous_left_angle = left_angle
         self.previous_right_angle = right_angle
 
         self.get_logger().info(
-            f'delta_s: {delta_s:.6f} m | '
-            f'delta_theta: {delta_theta:.6f} rad'
+            f'Pose -> x: {self.x:.4f} m | '
+            f'y: {self.y:.4f} m |'
+            f'theta: {self.theta:.4f} rad'   
         )
+
 def main(args=None):
     rclpy.init(args=args)
 
@@ -69,3 +108,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
