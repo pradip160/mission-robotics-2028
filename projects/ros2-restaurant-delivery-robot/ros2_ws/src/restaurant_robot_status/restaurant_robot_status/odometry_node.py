@@ -22,6 +22,7 @@ class OdometryNode(Node):
 
         self.previous_left_angle = None
         self.previous_right_angle = None
+        self.previous_time = None
 
 
         self.joint_state_subscriber = self.create_subscription(
@@ -43,9 +44,15 @@ class OdometryNode(Node):
         left_angle = msg.position[left_index]
         right_angle = msg.position[right_index]
 
+        current_time = (
+            msg.header.stamp.sec +
+            msg.header.stamp.nanosec * 1e-9
+        )
+
         if self.previous_left_angle is None:
             self.previous_left_angle = left_angle
             self.previous_right_angle = right_angle
+            self.previous_time = current_time 
             return
 
         delta_left_angle = left_angle - self.previous_left_angle
@@ -59,6 +66,11 @@ class OdometryNode(Node):
         delta_theta = (
             delta_right_distance - delta_left_distance
         ) / self.wheel_separation
+
+        delta_t = current_time - self.previous_time
+
+        linear_velocity = delta_s / delta_t
+        angular_velocity = delta_theta /delta_t
 
         theta_mid = self.theta + delta_theta / 2.0
 
@@ -88,6 +100,7 @@ class OdometryNode(Node):
 
         self.previous_left_angle = left_angle
         self.previous_right_angle = right_angle
+        self.previous_time = current_time 
 
         self.get_logger().info(
             f'Pose -> x: {self.x:.4f} m | '
@@ -108,4 +121,5 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
 
