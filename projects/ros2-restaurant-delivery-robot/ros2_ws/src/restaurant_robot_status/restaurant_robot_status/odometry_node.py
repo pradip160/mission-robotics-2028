@@ -4,6 +4,8 @@ import math
 from rclpy.node import Node 
 from sensor_msgs.msg import JointState 
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg  import TransformStamped
+from tf2_ros import TransformBroadcaster
 
 class OdometryNode(Node):
 
@@ -36,6 +38,7 @@ class OdometryNode(Node):
             '/odom',
             10
         )
+        self.tf_broadcaster = TransformBroadcaster(self)
 
     def joint_state_callback(self, msg):
         left_index = msg.name.index('left_wheel_joint')
@@ -69,6 +72,9 @@ class OdometryNode(Node):
 
         delta_t = current_time - self.previous_time
 
+        if delta_t <= 0.0:
+            return 
+
         linear_velocity = delta_s / delta_t
         angular_velocity = delta_theta /delta_t
 
@@ -83,7 +89,7 @@ class OdometryNode(Node):
 
         odom_msg = Odometry()
 
-        odom_msg.header.stamp = self.get_clock().now().to_msg()
+        odom_msg.header.stamp = msg.header.stamp
         odom_msg.header.frame_id = 'odom'
         odom_msg.child_frame_id = 'base_link'
 
@@ -96,7 +102,27 @@ class OdometryNode(Node):
         odom_msg.pose.pose.orientation.z = math.sin(self.theta / 2.0)
         odom_msg.pose.pose.orientation.w = math.cos(self.theta / 2.0)
 
+        odom_msg.twist.twist.linear.x = linear_velocity
+        odom_msg.twist.twist.angular.z = angular_velocity
+
         self.odom_publisher.publish(odom_msg)
+
+        transform_msg = TransformStamped()
+
+        transform_msg.header.stamp = msg.header.stamp
+        transform_msg.header.frame_id = 'odom'
+        transform_msg.child_frame_id = 'base_link'
+
+        transform_msg.transform.translation.x = self.x 
+        transform_msg.transform.translation.y = self.y 
+        transform_msg.transform.translation.z = 0.0
+
+        transform_msg.transform.rotation.x = 0.0 
+        transform_msg.transform.rotation.y = 0.0 
+        transform_msg.transform.rotation.z = math.sin(self.theta / 2.0)
+        transform_msg.transform.rotation.w = math.cos(self.theta / 2.0)
+
+        self.tf_broadcaster.sendTransform(transform_msg)
 
         self.previous_left_angle = left_angle
         self.previous_right_angle = right_angle
@@ -105,7 +131,10 @@ class OdometryNode(Node):
         self.get_logger().info(
             f'Pose -> x: {self.x:.4f} m | '
             f'y: {self.y:.4f} m |'
-            f'theta: {self.theta:.4f} rad'   
+            f'theta: {self.theta:.4f} rad'
+            f'theta: {self.theta:.4f} rad | ' 
+            f'v: {linear_velocity:.4f} m/s | '
+            f'omega: {angular_velocity:.4f} rad/s '  
         )
 
 def main(args=None):
