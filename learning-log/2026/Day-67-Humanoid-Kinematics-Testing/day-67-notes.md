@@ -1,10 +1,3 @@
-
-import math
-
-hip_angle = math.radians(30)
-
-print(hip_angle)
-math.atan2(y, x)
 Mission Korea 2028 — Day 67 Learning Log
 
 Date: 17 October 2026
