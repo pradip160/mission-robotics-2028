@@ -30,6 +30,12 @@ knee_x, knee_z, foot_x, foot_z = forward_kinematics(
     knee_angle_in_radians
 )
 
+def inverse_kinematics(thigh_length, shin_length, target_x, target_z):
+
+    distance = math.sqrt((target_x)**2 + (target_z)**2)
+    distance_minimum = abs(thigh_length - shin_length)
+    distance_maximum = thigh_length + shin_length 
+
 calculated_thigh_length = math.sqrt((knee_x - x_hip)**2 + (knee_z - z_hip)**2)
 calculated_shin_length = math.sqrt((foot_x - knee_x)**2 + (foot_z - knee_z)**2)
 
@@ -59,10 +65,23 @@ unequal_knee_x, unequal_knee_z, unequal_foot_x, unequal_foot_z = forward_kinemat
 assert math.isclose(unequal_foot_x, 0.3, abs_tol=1e-9)
 assert math.isclose(unequal_foot_z, -0.5, abs_tol=1e-9)
 
+ik_knee_x, ik_knee_z, ik_foot_x, ik_foot_z = forward_kinematics(
+    0.5,
+    0.3,
+    math.radians(1.954691398399838),
+    math.radians(107.4576031237221)
+)
+
+assert math.isclose(ik_foot_x, 0.3, abs_tol=1e-9) 
+assert math.isclose(ik_foot_z, -0.4, abs_tol=1e-9)
+
 x_positions = [x_hip, knee_x, foot_x]
 z_positions = [z_hip, knee_z, foot_z]
 
 straight_line_distance = math.sqrt(foot_x**2 + foot_z**2)
+
+
+
 
 plt.plot(x_positions, z_positions, marker="o")
 plt.axis("equal")
@@ -76,6 +95,7 @@ print(f"foot_x: {foot_x}, foot_z: {foot_z}")
 print(f"straight_line_distance: {straight_line_distance}")
 print(f"straight_foot_x: {straight_foot_x}, straight_foot_z: {straight_foot_z}")
 print(f"Unequal leg foot: ({unequal_foot_x}, {unequal_foot_z})")
+print(f"IK verification: ({ik_foot_x}, {ik_foot_z})")
 
 plt.show()
 
