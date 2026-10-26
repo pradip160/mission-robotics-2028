@@ -126,7 +126,7 @@ if result is None:
     print("Target unreachable.")
 else:
     hip_angle, knee_angle = result 
-    print("Target reachable.joint angles calculated.")
+    print("Target reachable. Joint angles calculated.")
 
 
 invalid_result = inverse_kinematics(
@@ -180,7 +180,7 @@ straight_line_distance = math.sqrt(foot_x**2 + foot_z**2)
 plt.plot(x_positions, z_positions, marker="o")
 plt.axis("equal")
 
-print(f"Knee Cordinates: ({knee_x:.2f}, {knee_z:.2f}) | Foot Coordinates: ({foot_x:.2f}, {foot_z:.2f})")
+print(f"Knee Coordinates: ({knee_x:.2f}, {knee_z:.2f}) | Foot Coordinates: ({foot_x:.2f}, {foot_z:.2f})")
 print(f"hip_angle_in_radians: {hip_angle_in_radians}")
 print(f"knee_angle_in_radians: {knee_angle_in_radians}")
 print(f"Calculated thigh length: {calculated_thigh_length}")
