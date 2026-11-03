@@ -2,8 +2,7 @@
 
 **Date:** Tuesday, 3 November 2026  
 **Project:** ROS 2 Restaurant Delivery Robot  
-**Session:** 2D LiDAR — physics, geometry, and first handwritten exercises  
-**Study time:** Not recorded; do not add to tracked hours without confirmation  
+**Session:** 2D LiDAR — physics, geometry, and first handwritten exercises    
 **Status:** Initial physics and geometry checkpoint completed; next geometry exercise deferred to the next study session  
 **Previous log:** Days 73–75 — trajectory safety and transition to embodied robotics
 
